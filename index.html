@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BrightNest Kids AI — Interactive Prototype</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+
+:root {
+  --c-bg: #FFF8F0;
+  --c-card: #FFFFFF;
+  --c-primary: #FF8C42;
+  --c-primary-light: #FFE5D0;
+  --c-secondary: #6C5CE7;
+  --c-secondary-light: #E8E4FD;
+  --c-accent-green: #00D68F;
+  --c-accent-green-light: #D4FCE9;
+  --c-accent-blue: #4DABF7;
+  --c-accent-blue-light: #D6ECFF;
+  --c-accent-pink: #FF6B9D;
+  --c-accent-pink-light: #FFE0EC;
+  --c-accent-yellow: #FFD93D;
+  --c-accent-yellow-light: #FFF5CC;
+  --c-accent-purple: #A855F7;
+  --c-accent-purple-light: #F3E8FF;
+  --c-accent-teal: #14B8A6;
+  --c-accent-teal-light: #CCFBF1;
+  --c-accent-red: #EF4444;
+  --c-accent-red-light: #FEE2E2;
+  --c-text: #2D3748;
+  --c-text-light: #718096;
+  --c-text-muted: #A0AEC0;
+  --c-border: #E2E8F0;
+  --c-success: #48BB78;
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+  --radius-sm: 12px;
+  --radius-md: 20px;
+  --radius-lg: 28px;
+  --radius-xl: 36px;
+  --radius-full: 999px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: linear-gradient(135deg, #E0E7FF 0%, #FCE7F3 50%, #FFEDD5 100%);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.phone-frame {
+  width: 100%;
+  max-width: 390px;
+  height: 844px;
+  background: var(--c-bg);
+  border-radius: 48px;
+  box-shadow: var(--shadow-lg), 0 0 0 12px #1a1a2e, 0 0 0 14px #333;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.phone-notch {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 150px;
+  height: 32px;
+  background: #1a1a2e;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  z-index: 1000;
+}
+
+.screen {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 48px 20px 90px 20px;
+  display: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  scrollbar-width: none;
+}
+.screen::-webkit-scrollbar { display: none; }
+.screen.active { display: block; opacity: 1; }
+
+.bottom-nav {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid var(--c-border);
+  display: none;
+  grid-template-columns: repeat(4, 1fr);
+  align-items: center;
+  padding: 0 16px 20px 16px;
+  z-index: 100;
+}
+.bottom-nav.visible { display: grid; }
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+}
+.nav-item:hover { background: var(--c-primary-light); }
+.nav-item.active .nav-icon { color: var(--c-primary); }
+.nav-item.active .nav-label { color: var(--c-primary); font-weight: 700; }
+.nav-icon { font-size: 24px; color: var(--c-text-light); transition: all 0.2s; }
+.nav-label { font-size: 11px; color: var(--c-text-light); font-weight: 600; }
+
+.btn {
+  border: none;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn:active { transform: scale(0.96); }
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--c-primary), #FF6B35);
+  color: white;
+  padding: 16px 32px;
+  border-radius: var(--radius-full);
+  font-size: 17px;
+  box-shadow: 0 4px 16px rgba(255,140,66,0.35);
+}
+.btn-primary:hover { box-shadow: 0 6px 24px rgba(255,140,66,0.5); transform: translateY(-2px); }
+
+.btn-secondary {
+  background: white;
+  color: var(--c-text);
+  padding: 14px 28px;
+  border-radius: var(--radius-full);
+  font-size: 16px;
+  border: 2px solid var(--c-border);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-lg { width: 100%; padding: 18px; font-size: 18px; }
+
+.card {
+  background: var(--c-card);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(0,0,0,0.04);
+}
+
+.input-field {
+  width: 100%;
+  padding: 16px 20px;
+  border: 2px solid var(--c-border);
+  border-radius: var(--radius-md);
+  font-family: 'Nunito', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--c-text);
+  outline: none;
+  transition: all 0.2s;
+  background: white;
+}
+.input-field:focus { border-color: var(--c-primary); box-shadow: 0 0 0 4px var(--c-primary-light); }
+.input-field::placeholder { color: var(--c-text-muted); }
+
+.title-xl { font-size: 32px; font-weight: 900; color: var(--c-text); line-height: 1.2; }
+.title-lg { font-size: 26px; font-weight: 800; color: var(--c-text); line-height: 1.2; }
+.title-md { font-size: 22px; font-weight: 800; color: var(--c-text); line-height: 1.3; }
+.title-sm { font-size: 18px; font-weight: 700; color: var(--c-text); }
+.body-text { font-size: 15px; color: var(--c-text-light); line-height: 1.6; font-weight: 600; }
+.label { font-size: 13px; font-weight: 700; color: var(--c-text-light); text-transform: uppercase; letter-spacing: 1px; }
+
+.splash-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  text-align: center;
+}
+
+.mascot-bounce { animation: bounce 2s infinite ease-in-out; }
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-16px); }
+}
+
+.logo-text {
+  font-size: 36px;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--c-primary), var(--c-accent-pink), var(--c-accent-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.tagline { font-size: 16px; font-weight: 700; color: var(--c-text-light); }
+
+.welcome-illustration {
+  width: 100%;
+  height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.age-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 2px solid transparent;
+}
+.age-chip.selected { border-color: var(--c-primary); box-shadow: 0 0 0 4px var(--c-primary-light); }
+
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-top: 8px;
+}
+
+.avatar-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  background: var(--c-primary-light);
+  border: 3px solid white;
+  box-shadow: var(--shadow-sm);
+}
+
+.daily-path-card {
+  background: linear-gradient(135deg, var(--c-secondary), #8B5CF6);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  color: white;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+.daily-path-card::before {
+  content: '';
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 140px;
+  height: 140px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 50%;
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.category-card {
+  padding: 20px 16px;
+  border-radius: var(--radius-lg);
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  border: 2px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+.category-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+.category-card:active { transform: scale(0.97); }
+
+.cat-icon { font-size: 40px; margin-bottom: 8px; display: block; }
+.cat-name { font-size: 15px; font-weight: 800; color: var(--c-text); }
+
+.lesson-player {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  text-align: center;
+  gap: 24px;
+}
+
+.lesson-visual {
+  width: 200px;
+  height: 200px;
+  border-radius: var(--radius-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 100px;
+  background: var(--c-accent-yellow-light);
+  box-shadow: var(--shadow-md);
+  animation: pulse-soft 2s infinite;
+}
+@keyframes pulse-soft {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+}
+
+.lesson-controls {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.control-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: white;
+  box-shadow: var(--shadow-md);
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.control-btn:hover { transform: scale(1.1); }
+.control-btn.primary { width: 72px; height: 72px; background: var(--c-primary); color: white; font-size: 28px; }
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--c-border);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-top: 8px;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--c-primary), var(--c-accent-pink));
+  border-radius: var(--radius-full);
+  transition: width 0.5s ease;
+}
+
+.story-input-area {
+  background: var(--c-accent-purple-light);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.story-page {
+  background: linear-gradient(180deg, #FFF8E7 0%, #FFF0D4 100%);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 16px;
+  border: 2px dashed var(--c-accent-yellow);
+}
+
+.story-illustration { font-size: 80px; }
+.story-text { font-size: 18px; font-weight: 700; color: var(--c-text); line-height: 1.7; }
+
+.game-board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.game-card {
+  aspect-ratio: 1;
+  border-radius: var(--radius-md);
+  background: white;
+  border: 3px solid var(--c-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
+}
+.game-card:hover { transform: scale(1.05); border-color: var(--c-primary); }
+.game-card.flipped { background: var(--c-accent-yellow-light); border-color: var(--c-accent-yellow); }
+.game-card.matched { background: var(--c-accent-green-light); border-color: var(--c-accent-green); animation: match-pop 0.5s ease; }
+@keyframes match-pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.badge-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.badge-item {
+  aspect-ratio: 1;
+  border-radius: var(--radius-lg);
+  background: white;
+  border: 2px solid var(--c-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px;
+  transition: all 0.2s;
+}
+.badge-item.earned { background: var(--c-accent-yellow-light); border-color: var(--c-accent-yellow); }
+.badge-emoji { font-size: 32px; }
+.badge-name { font-size: 11px; font-weight: 700; color: var(--c-text-light); text-align: center; }
+
+.star-display {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 20px;
+}
+
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  text-align: center;
+  border: 1px solid var(--c-border);
+}
+.stat-value { font-size: 32px; font-weight: 900; color: var(--c-primary); }
+.stat-label { font-size: 13px; font-weight: 700; color: var(--c-text-light); margin-top: 4px; }
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--c-border);
+}
+.setting-label { font-size: 16px; font-weight: 700; color: var(--c-text); }
+
+.toggle {
+  width: 52px;
+  height: 30px;
+  background: var(--c-border);
+  border-radius: var(--radius-full);
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.toggle.on { background: var(--c-accent-green); }
+.toggle-knob {
+  width: 26px;
+  height: 26px;
+  background: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: all 0.3s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+.toggle.on .toggle-knob { left: 24px; }
+
+.video-card {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  background: white;
+  border-radius: var(--radius-lg);
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid var(--c-border);
+}
+.video-card:hover { box-shadow: var(--shadow-md); transform: translateX(4px); }
+.video-thumb {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-md);
+  background: var(--c-accent-pink-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  flex-shrink: 0;
+}
+.video-info { display: flex; flex-direction: column; justify-content: center; gap: 4px; }
+.video-title { font-size: 16px; font-weight: 800; color: var(--c-text); }
+.video-meta { font-size: 13px; font-weight: 600; color: var(--c-text-light); }
+
+.toast {
+  position: fixed;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-100px);
+  background: var(--c-text);
+  color: white;
+  padding: 14px 28px;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  font-size: 15px;
+  z-index: 10000;
+  opacity: 0;
+  transition: all 0.4s ease;
+  box-shadow: var(--shadow-lg);
+}
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+.avatar-select {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+.avatar-option {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-full);
+  background: white;
+  border: 3px solid var(--c-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.avatar-option:hover { transform: scale(1.1); }
+.avatar-option.selected { border-color: var(--c-primary); background: var(--c-primary-light); box-shadow: 0 0 0 4px var(--c-primary-light); }
+
+.counting-item {
+  font-size: 48px;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+}
+.counting-item:hover { transform: scale(1.2); }
+.counting-item.tapped { animation: tap-bounce 0.4s ease; }
+@keyframes tap-bounce {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.4); }
+  100% { transform: scale(1); }
+}
+
+.matching-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin: 20px 0;
+}
+.match-card {
+  aspect-ratio: 1;
+  border-radius: var(--radius-lg);
+  background: white;
+  border: 3px solid var(--c-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: var(--shadow-sm);
+}
+.match-card:hover { border-color: var(--c-primary); transform: scale(1.05); }
+.match-card.selected { border-color: var(--c-primary); background: var(--c-primary-light); }
+.match-card.correct { border-color: var(--c-accent-green); background: var(--c-accent-green-light); animation: match-pop 0.5s ease; }
+
+.puzzle-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  width: 240px;
+  margin: 20px auto;
+}
+.puzzle-piece {
+  width: 76px;
+  height: 76px;
+  border-radius: 8px;
+  background: var(--c-accent-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 900;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 2px solid rgba(255,255,255,0.3);
+}
+.puzzle-piece:hover { transform: scale(1.05); background: var(--c-primary); }
+.puzzle-piece.empty { background: transparent; border: 2px dashed var(--c-border); cursor: default; }
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-in { animation: fadeInUp 0.5s ease forwards; }
+
+@keyframes sparkle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.3); }
+}
+.sparkle { animation: sparkle 1.5s infinite; }
+
+.confetti-piece {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  animation: confetti-fall 3s ease-out forwards;
+  z-index: 9999;
+}
+@keyframes confetti-fall {
+  0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="phone-notch"></div>
+  <div class="toast" id="toast"></div>
+
+  <!-- ==================== SPLASH SCREEN ==================== -->
+  <div class="screen active" id="screen-splash">
+    <div class="splash-content">
+      <div class="mascot-bounce" style="font-size: 100px;">🐻</div>
+      <div class="logo-text">BrightNest</div>
+      <div class="tagline">AI-Powered Learning for Little Minds</div>
+      <div style="margin-top: 40px;">
+        <div style="width: 48px; height: 48px; border: 4px solid var(--c-primary-light); border-top-color: var(--c-primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== WELCOME SCREEN ==================== -->
+  <div class="screen" id="screen-welcome">
+    <div class="welcome-illustration">
+      <div style="font-size: 140px; animation: bounce 2s infinite;">🌈</div>
+    </div>
+    <div style="text-align: center; margin-bottom: 32px;">
+      <h1 class="title-xl" style="margin-bottom: 12px;">Hello, Little Explorer!</h1>
+      <p class="body-text">Let's go on a magical learning adventure together. What would you like to learn today?</p>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <button class="btn btn-primary btn-lg" onclick="goTo('screen-auth')">
+        <span>🚀</span> Get Started
+      </button>
+      <button class="btn btn-secondary btn-lg" onclick="goTo('screen-auth')">
+        <span>👋</span> I already have an account
+      </button>
+    </div>
+    <p style="text-align: center; margin-top: 24px; font-size: 13px; color: var(--c-text-muted); font-weight: 600;">
+      Trusted by 50,000+ families worldwide
+    </p>
+  </div>
+
+  <!-- ==================== AUTH SCREEN ==================== -->
+  <div class="screen" id="screen-auth">
+    <div style="text-align: center; margin-bottom: 32px; padding-top: 20px;">
+      <div style="font-size: 64px; margin-bottom: 16px;">🔐</div>
+      <h1 class="title-lg">Parent Login</h1>
+      <p class="body-text">Secure access for grown-ups only</p>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div>
+        <label class="label" style="display: block; margin-bottom: 8px;">Email Address</label>
+        <input type="email" class="input-field" placeholder="parent@email.com" value="sarah.parent@email.com">
+      </div>
+      <div>
+        <label class="label" style="display: block; margin-bottom: 8px;">Password</label>
+        <input type="password" class="input-field" placeholder="••••••••" value="password123">
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+        <div class="toggle on" onclick="this.classList.toggle('on')"><div class="toggle-knob"></div></div>
+        <span style="font-size: 14px; font-weight: 600; color: var(--c-text-light);">Remember me</span>
+      </div>
+      <button class="btn btn-primary btn-lg" style="margin-top: 16px;" onclick="goTo('screen-profile')">
+        <span>🔑</span> Login Securely
+      </button>
+      <button class="btn btn-secondary btn-lg" onclick="goTo('screen-profile')">
+        <span>📧</span> Continue with Google
+      </button>
+    </div>
+    <p style="text-align: 
